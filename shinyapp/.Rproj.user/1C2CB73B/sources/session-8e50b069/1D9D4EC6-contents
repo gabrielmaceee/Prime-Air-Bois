@@ -1,0 +1,77 @@
+#
+# This is the user-interface definition of a Shiny web application. You can
+# run the application by clicking 'Run App' above.
+#
+# Find out more about building applications with Shiny here:
+#
+#    http://shiny.rstudio.com/
+#
+
+library(shiny)
+library(shinydashboard)
+
+
+# Define UI for application that draws a histogram
+shinyUI(
+
+  dashboardPage(
+    dashboardHeader(title = "Analyse des dossiers de suivi de la prime air bois", titleWidth = 800),
+    dashboardSidebar(
+      sidebarMenu(  
+        menuItem("Présentation",  tabName = "presentation", icon = icon("font-awesome"), startExpanded = FALSE),
+        menuItem("Exploration", tabName = "exploration", icon = icon("a"), startExpanded = FALSE,
+        menuSubItem(tabPanel("Variables",
+                             selectizeInput('column_name',
+                                            label='Sélectionner une variable',
+                                            choices = column_names[order(column_names$order, decreasing = FALSE),]$name
+                             )
+        ), tabName = "exploration"),
+         menuSubItem(tabPanel("Custom",
+                              selectizeInput('un_territoire',
+                                             label='Sélectionner un territoire',
+                                             choices = c("Tous",unique(data$territoire))
+                              )
+         ), tabName = "exploration")
+        ),
+        menuItem("Indicateurs", tabName = "indicateurs", icon = icon("b"), startExpanded = FALSE, 
+                 menuItem("La prime et ses bénéficiaires", startExpanded = FALSE,
+                           menuSubItem("Carto",tabName = "indicateurs")),
+                 menuItem("Modes d'usages", startExpanded = FALSE,
+                          menuSubItem("Test",tabName = "indicateurs"),
+                          menuSubItem("Test",tabName = "indicateurs"),
+                          menuSubItem("Test",tabName = "indicateurs"),
+                          menuSubItem("Test",tabName = "indicateurs"),
+                          menuSubItem("Test"),tabName = "indicateurs")
+                 ),
+        menuItem("Typologie", tabName = "typologie", icon = icon("c"), startExpanded = FALSE, 
+                 menuItem("Communale", startExpanded = FALSE,
+                          menuSubItem("Test",tabName = "typologie")),
+                 menuItem("Individuelle", startExpanded = FALSE,
+                          menuSubItem("Test",tabName = "typologie"),
+                          menuSubItem("Test",tabName = "typologie"),
+                          menuSubItem("Test",tabName = "typologie"),
+                          menuSubItem("Test",tabName = "typologie")
+                          )
+        )
+      )
+    ),
+    dashboardBody(
+      tabItems(
+        tabItem(tabName = "presentation",
+                h2("Présentation du fonctionnement de l'appli et des données")
+        ),
+        tabItem(tabName = "exploration",
+                plotOutput("distPlot", height = "750px", width =  "100%")
+        ),
+        
+        tabItem(tabName = "indicateurs",
+                h2("Les différents graphs que l'on trouve pertinents à voir"),
+                leafletOutput("cartographie", height = "750px", width =  "100%")
+        ),
+        tabItem(tabName = "typologie",
+                 h2("oui, c'est les typologies")
+        )
+    )
+  )
+) 
+)

@@ -1,0 +1,4 @@
+"0","for(i in setdiff(names(data_test), c(""insee_com"", ""commune"", ""Territoire""))){"
+"0","  data_test[,i] <- as.numeric(data_test %>% pull(i))"
+"0","  data_test_cr[,i] <- scale(as.numeric(data_test %>% pull(i)))"
+"0","}"

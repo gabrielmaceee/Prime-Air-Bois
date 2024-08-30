@@ -1,0 +1,1 @@
+"0","res.afdm<- FAMD(na.omit(data_afmd), sup.var = c(""Territoire"", ""montant_aide""), graph = FALSE, ncp = 20)"

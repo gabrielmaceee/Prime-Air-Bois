@@ -1,0 +1,4 @@
+"0","entree <- data <- read_excel(""../data/3_Resultat/data_questionnaire_complet.xlsx"")"
+"0","sortie <- data.frame(cluster_com = grp, insee_com = rownames(as.data.frame(grp)))"
+"0","sortie <- left_join(entree, sortie, by = ""insee_com"")"
+"0","write_xlsx(sortie, ""../data/3_Resultat/data_questionnaire_complet.xlsx"")"

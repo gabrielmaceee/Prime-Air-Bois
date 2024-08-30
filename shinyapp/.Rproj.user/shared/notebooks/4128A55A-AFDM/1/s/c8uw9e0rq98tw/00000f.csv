@@ -1,0 +1,5 @@
+"0","library(clv)"
+"0","# compute intercluster distances and intracluster diameters"
+"0","cls.scatt1 <- cls.scatt.data(res.afdm$ind$coord, res.km$cluster)"
+"0","cls.scatt2 <- cls.scatt.data(res.afdm$ind$coord, res.km$cluster, dist=""manhattan"")"
+"0","cls.scatt3 <- cls.scatt.data(res.afdm$ind$coord, res.km$cluster, dist=""correlation"")"

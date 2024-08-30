@@ -1,0 +1,3 @@
+"0",""
+"0","#data_afmd <- data_afmd[grp == ""1"",c(""N..dossier"",utilisation)]"
+"0","#res.afdm<- FAMD(data_afmd, sup.var = c(""Territoire"", ""montant_aide"", ""cluster_com"", ""type_commune"", ""Age"", ""majoration"", ""Freq.utilisation.période.chauffe""), graph = FALSE, ncp = 54)"

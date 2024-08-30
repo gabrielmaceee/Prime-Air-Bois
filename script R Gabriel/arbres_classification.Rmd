@@ -1,0 +1,270 @@
+---
+title: "divers"
+author: "Gabriel Macé"
+date: "2024-08-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning= FALSE)
+```
+
+```{r, include=FALSE}
+library(readxl)
+library(writexl)
+library(tidyr)
+library(dplyr)
+library(rpart)
+library(rpart.plot)
+library(caret)
+```
+
+```{r, include=FALSE}
+# Pour accèder aux serveurs :
+wd_script <- "C:/Users/gmace/PAB/Projet Bois-buche/scripts/R"
+setwd(wd_script)
+con_encoding <- "UTF-8"
+source("R_connect_siddt.R")
+source("R_functions.R")
+setwd("C:/Users/gmace/PAB/Projet Bois-buche/script R Gabriel")
+```
+
+
+```{r}
+# Chargement des données :
+setwd("C:/Users/gmace/PAB/Projet Bois-buche/script R Gabriel")
+data <- read_excel("../data/3_Resultat/data_questionnaire_complet.xlsx")
+data <- data[!data$Type.Ancien.appareil %in% c("Chaudière","Cuisinière"),]
+data <- data[!data$Nouveau.matériel %in% c("Chaudière","Cuisinière"),]
+data[data$Nouveau.matériel %in% c("Poêle de masse", "Poêle hydraulique"),]$Nouveau.matériel <- "Poêle"
+# data <- data[!is.na(data$dossier_reçu),]
+data <- data[!is.na(data$dossier_reçu),]
+#data <- data[data$dossier_reçu > "2022-03-01",]
+
+types_communes <- read_excel("../data/types_communes.xlsx", sheet = 4, skip = 2, col_names = TRUE)
+names(types_communes) <- c("insee_com", "type_commune")
+types_communes$type_commune <- factor(types_communes$type_commune, levels = c("rural autonome très peu dense", "rural autonome peu dense",  "rural sous faible influence d'un pôle", "rural sous forte influence d'un pôle", "urbain densité intermédiaire", "urbain dense"))
+#data <- left_join(data, binaire, by = join_by("N..dossier" == "N° dossier"))
+data <- left_join(data, types_communes, by = "insee_com")
+
+data$Revenus <- factor(data$Revenus, levels = rev(c("Pas de réponse", "Moins de 20 000 €", "20 000 à 30 000 €", "30 000 à 40 000 €", "40 000 à 50 000 €", "50 000 à 60 000 €", "60 000 à 70 000 €", "70 000 à 80 000 €", "80 000 à 90 000 €", "Plus de 100 000 €")))
+
+data$Usage.ancien.matériel <- factor(data$Usage.ancien.matériel, levels = c("Chauffage principal", "Chauffage d'appoint", "Plaisir / agrément", "Pas de réponse"))
+data$Usage.nouveau.matériel <- factor(data$Usage.nouveau.matériel, levels = c("Chauffage principal", "Chauffage d'appoint", "Plaisir / agrément", "Pas de réponse"))
+
+data$Freq.utilisation.période.chauffe <- factor(data$Freq.utilisation.période.chauffe, levels = c("Tous les jours", "3 à 4 jours / semaine", "1 à 2 jours / semaine", "1 à 3 jours / mois", "moins souvent", "Jamais", "Pas de réponse"))
+
+data$Durée.séchage.bois <- factor(data$Durée.séchage.bois, levels =c("<1an", "1-2 ans", "> 2 ans", "Ne sait pas", "Pas de réponse"))
+
+data <- data %>% filter(!data$Nouveau.matériel == "Pas de réponse")
+
+data[data$Type.Ancien.appareil == "Poêle" & data$Type.combustible %in% c("Pas de réponse", 'Autre (détails dans colonne "Type combustible autre")'),"Type.combustible"] <- "à enlever"
+data[data$Nouveau.matériel == "Poêle" & data$Type.combustible.nouveau.materiel %in% c("Pas de réponse", "autre", "Bûche, autre"),"Type.combustible"] <- "à enlever"
+data <- data %>% filter(!data$Type.combustible == "à enlever" )
+data <- data %>% filter(!data$Type.combustible.nouveau.materiel == "à enlever" )
+
+data[data$Type.Ancien.appareil  == "Poêle" & data$Type.combustible %in% c("Bûche", "Bois de récup"),]$Type.Ancien.appareil <- "Poêle buche"
+data[data$Type.Ancien.appareil  == "Poêle" & data$Type.combustible == "Granulés",]$Type.Ancien.appareil <- "Poêle granulés"
+
+data[data$Nouveau.matériel == "Poêle" & data$Type.combustible.nouveau.materiel == "Bûche",]$Nouveau.matériel <- "Poêle bûche"
+data[data$Nouveau.matériel == "Poêle" & data$Type.combustible.nouveau.materiel == "Bûche, Granulés",]$Nouveau.matériel <- "Poêle mixte"
+data[data$Nouveau.matériel == "Poêle" & data$Type.combustible.nouveau.materiel == "Granulés",]$Nouveau.matériel <- "Poêle granulés"
+```
+
+
+```{r}
+names(data)
+
+```
+
+# qu'est ce qui fait qu'ils changent de combustible ?
+
+
+```{r}
+utilisation = c("Type.Ancien.appareil", "Usage.ancien.matériel", "Nouveau.matériel",  "Usage.nouveau.matériel","cout_total_TTC", "type_commune", "Territoire", "montant_aide",                  "Revenus", "Nb.pers.ménage", "Année.installation", "Durée.séchage.bois", "cluster_com", "Sit.pro.conjoint", "Sit.pro.demandeur", "dossier_reçu"
+              ,"Approvisionnement",
+              "Age", "majoration", "Freq.utilisation.période.chauffe"
+              , "Stockage.bois"
+              , "Ramonage.installation"
+                )
+
+usage <- c("Type.Ancien.appareil", "Usage.ancien.matériel", "Nouveau.matériel",  "Usage.nouveau.matériel","cout_total_TTC", "Année.installation", "Durée.séchage.bois", "Approvisionnement", "Freq.utilisation.période.chauffe", "Stockage.bois", "Ramonage.installation")
+  
+socio_pro <-c("type_commune", "Territoire", "montant_aide", "Revenus", "Nb.pers.ménage",  "cluster_com", "Sit.pro.conjoint", "Sit.pro.demandeur", "Age", "majoration")
+```
+
+
+```{r}
+# prédiction cluster :
+attach(data) # les odjets de data peuvent être trouvés en indiquant seulement leur nom
+arbre = rpart(cluster_ind~., data = data[, c(utilisation, "cluster_ind")])
+```
+
+
+```{r}
+arbre
+```
+
+
+```{r}
+rpart.plot(arbre)
+```
+## Train / test
+```{r}
+# Train / test
+set.seed(1)
+
+#use 70% of dataset as training set and 30% as test set
+sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3))
+train  <- data[sample, ]
+test   <- data[!sample, ]
+```
+
+### Usage
+#### Validation croisée :
+```{r}
+train_clean <- na.omit(train[ , c(usage, "cluster_ind")])
+train_control <- trainControl(method = "cv", number = 10)
+cp_values <- seq(0.001, 0.05, by = 0.005)
+maxdepth_values <- c(2, 3, 4, 5, 6)
+results <- data.frame(cp = numeric(), maxdepth = numeric(), Accuracy = numeric())
+criteria <- c("gini", "information") 
+
+for (criterion in criteria) {
+for (cp in cp_values) {
+  for (maxdepth in maxdepth_values) {
+    
+    # Entraîner le modèle
+    model <- rpart(cluster_ind~., 
+                   data = train_clean, 
+                   parms = list(split = criterion),
+                   control = rpart.control(cp = cp, maxdepth = maxdepth))
+    
+    # Prédire sur les données d'entraînement (ou validation croisée si disponible)
+    predictions <- predict(model, train_clean, type = "class")
+    
+    # Calculer la précision (ou une autre métrique)
+    accuracy <- sum(predictions == train_clean$cluster_ind) / nrow(train_clean)
+    
+    # Stocker les résultats
+results <- rbind(results, data.frame(cp = cp, maxdepth = maxdepth, criterion = criterion, Accuracy = accuracy))
+  }
+}
+}
+best_result <- results[which.max(results$Accuracy), ]
+print(best_result)
+```
+
+# CRéation du modèle :
+```{r, warning=FALSE}
+arbre_usage = rpart(cluster_ind~., data = train[ , c(usage, "cluster_ind")], parms = list(split = "gini"), control = list(cp = 0.001, maxdepth = 6))
+```
+
+```{r}
+rpart.plot(arbre_usage, type = 3, clip.right.labs = TRUE, fallen.leaves = FALSE, under = TRUE, cex = 0.5)
+rpart.rules(arbre_usage)
+```
+#### Test :
+```{r}
+res_usage <- table(predict(arbre_usage, newdata = test[, c(usage, "cluster_ind")], type = "class"), test$cluster_ind)
+res_usage
+fp_usage <- res_usage[2,1] 
+vp_usage <- res_usage[1,1] 
+fn_usage <- res_usage[1,2] 
+vn_usage <- res_usage[2,2] 
+print(paste("Accuracy = ", (vn_usage + vp_usage) / dim(test)[1] ))
+print(paste("Recall = ", vp_usage / (vp_usage + fn_usage)))
+print(paste("Precision = ", vp_usage / (vp_usage + fp_usage)))
+```
+
+
+### Socio-pro
+
+#### Validation croisée :
+```{r}
+train_clean <- na.omit(train[ , c(socio_pro, "cluster_ind")])
+train_control <- trainControl(method = "cv", number = 10)
+cp_values <- seq(0.001, 0.05, by = 0.005)
+maxdepth_values <- c(2, 3, 4, 5, 6)
+results <- data.frame(cp = numeric(), maxdepth = numeric(), Accuracy = numeric())
+criteria <- c("gini", "information") 
+
+for (criterion in criteria) {
+for (cp in cp_values) {
+  for (maxdepth in maxdepth_values) {
+    
+    # Entraîner le modèle
+    model <- rpart(cluster_ind~., 
+                   data = train_clean, 
+                   parms = list(split = criterion),
+                   control = rpart.control(cp = cp, maxdepth = maxdepth))
+    
+    # Prédire sur les données d'entraînement (ou validation croisée si disponible)
+    predictions <- predict(model, train_clean, type = "class")
+    
+    # Calculer la précision (ou une autre métrique)
+    accuracy <- sum(predictions == train_clean$cluster_ind) / nrow(train_clean)
+    
+    # Stocker les résultats
+results <- rbind(results, data.frame(cp = cp, maxdepth = maxdepth, criterion = criterion, Accuracy = accuracy))
+  }
+}
+}
+best_result <- results[which.max(results$Accuracy), ]
+print(best_result)
+```
+
+#### Création du modèle :
+```{r, warning=FALSE}
+arbre_sp = rpart(cluster_ind~., data = train[ , c(socio_pro, "cluster_ind")], parms = list(split = "gini"), control = list(cp = 0.001, maxdepth = 6))
+# cp = critère de complexité du modèle
+# maxdepth = profondeur max de l'arbre
+```
+
+```{r}
+rpart.plot(arbre_sp, type = 3, clip.right.labs = TRUE, fallen.leaves = FALSE, under = TRUE, cex = 0.5)
+rpart.rules(arbre_sp)
+```
+
+#### Test :
+```{r}
+res_sp = table(predict(arbre_sp, newdata = test[, c(socio_pro, "cluster_ind")], type = "class"), test$cluster_ind)
+res_sp
+fp_sp <- res_sp[2,1] 
+vp_sp <- res_sp[1,1] 
+fn_sp <- res_sp[1,2] 
+vn_sp <- res_sp[2,2] 
+print(paste("Accuracy = ", (vn_sp + vp_sp) / dim(test)[1] ))
+print(paste("Recall = ", vp_sp / (vp_sp + fn_sp)))
+print(paste("Precision = ", vp_sp / (vp_sp + fp_sp)))
+```
+
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```

@@ -1,0 +1,63 @@
+"0","library(readxl)"
+"0","library(writexl)"
+"0","library(stringr)"
+"0","library(tidyr)"
+"0","library(sf)"
+"2","Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.3.1; sf_use_s2() is TRUE
+"
+"0","library(dplyr)"
+"2","
+Attachement du package : ‘dplyr’
+
+"
+"2","Les objets suivants sont masqués depuis ‘package:stats’:
+
+    filter, lag
+
+"
+"2","Les objets suivants sont masqués depuis ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+"
+"0","library(stats)"
+"0","library(ggplot2)"
+"0","library(ggspatial)"
+"0","library(plotly)"
+"2","Registered S3 method overwritten by 'data.table':
+  method           from
+  print.data.table     
+"
+"2","
+Attachement du package : ‘plotly’
+
+"
+"2","L'objet suivant est masqué depuis ‘package:ggplot2’:
+
+    last_plot
+
+"
+"2","L'objet suivant est masqué depuis ‘package:stats’:
+
+    filter
+
+"
+"2","L'objet suivant est masqué depuis ‘package:graphics’:
+
+    layout
+
+"
+"0","wd_script <- ""C:/Users/gmace/PAB/Projet Bois-buche/scripts/R"""
+"0","setwd(wd_script)"
+"2","Avis :"
+"2"," The working directory was changed to C:/Users/gmace/PAB/Projet Bois-buche/scripts/R inside a notebook chunk. The working directory will be reset when the chunk is finished running. Use the knitr root.dir option in the setup chunk to change the working directory for notebook chunks.
+"
+"0","con_encoding <- ""UTF-8"""
+"0","source(""R_connect_siddt.R"")"
+"0","source(""R_functions.R"")"
+"2","Le chargement a nécessité le package : DBI
+"
+"2","Le chargement a nécessité le package : proto
+"
+"0","setwd(""C:/Users/gmace/PAB/Projet Bois-buche/script R Gabriel"")"
+"0","data <- read_excel(""../data/3_Resultat/data_questionnaire_complet.xlsx"")[-1]"

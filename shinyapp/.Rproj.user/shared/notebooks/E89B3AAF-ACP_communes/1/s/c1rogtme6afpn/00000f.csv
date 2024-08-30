@@ -1,0 +1,6 @@
+"0","wd_script <- ""C:/Users/gmace/PAB/Projet Bois-buche/scripts/R"""
+"0","setwd(wd_script)"
+"0","con_encoding <- ""UTF-8"""
+"0","source(""R_connect_siddt.R"")"
+"0","source(""R_functions.R"")"
+"0","setwd(""C:/Users/gmace/PAB/Projet Bois-buche/script R Gabriel"")"

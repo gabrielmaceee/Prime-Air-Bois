@@ -1,0 +1,2 @@
+"0","var = get_famd_var(res.afdm)"
+"0","corrplot(var$contrib[,1:20], is.corr = FALSE) "

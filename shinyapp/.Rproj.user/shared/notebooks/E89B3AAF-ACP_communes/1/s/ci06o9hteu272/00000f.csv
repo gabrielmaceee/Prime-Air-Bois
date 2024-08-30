@@ -1,0 +1,50 @@
+"0","comm <- read.csv(""../data/siddt.csv"", sep = "";"", skip = 2)[-c(124:130),c(1,2, 3,4,6)]"
+"0","comm2 <- read.csv(""../data/siddt2.csv"", sep = "";"", skip = 2)[-c(124:130),c(1, 3:5)]"
+"0","logement = read.csv(""../data/logements_2020.csv"", sep ="";"", skip= 2)[-c(124:130),c(1,7,8)]"
+"0","objectifs_communes <- read_excel(""../data/objectifs_communes_2022_2023.xlsx"")[1:123,1:4]"
+"1","[38;5;232mNew names:
+[36m•[38;5;232m `commune` -> `commune...3`
+[36m•[38;5;232m `` -> `...5`
+[36m•[38;5;232m `commune` -> `commune...6`
+[36m•[38;5;232m `` -> `...8`
+[36m•[38;5;232m `` -> `...9`
+[36m•[38;5;232m `` -> `...10`
+[36m•[38;5;232m `` -> `...11`
+[36m•[38;5;232m `` -> `...12`
+[36m•[38;5;232m `` -> `...13`
+[36m•[38;5;232m `` -> `...14`
+[36m•[38;5;232m `` -> `...15`
+[36m•[38;5;232m `` -> `...16`
+[36m•[38;5;232m `` -> `...17`[39m
+"
+"0","oc <- read_excel(""../data/objectifs_communes_2022_2023.xlsx"")[124:239,c(2,4)]"
+"1","[38;5;232mNew names:
+[36m•[38;5;232m `commune` -> `commune...3`
+[36m•[38;5;232m `` -> `...5`
+[36m•[38;5;232m `commune` -> `commune...6`
+[36m•[38;5;232m `` -> `...8`
+[36m•[38;5;232m `` -> `...9`
+[36m•[38;5;232m `` -> `...10`
+[36m•[38;5;232m `` -> `...11`
+[36m•[38;5;232m `` -> `...12`
+[36m•[38;5;232m `` -> `...13`
+[36m•[38;5;232m `` -> `...14`
+[36m•[38;5;232m `` -> `...15`
+[36m•[38;5;232m `` -> `...16`
+[36m•[38;5;232m `` -> `...17`[39m
+"
+"0","objectifs_communes <- left_join(objectifs_communes, oc, by = ""id_comm"")"
+"0","objectifs_communes$id_comm = as.character(objectifs_communes$id_comm)"
+"0","objectifs_communes = objectifs_communes[,c(2,4,5)]"
+"0","names(objectifs_communes)= c(""insee_com"", ""objectifs_2022"", ""changement_2023"")"
+"0","objectifs_communes$changement_2023 = abs(objectifs_communes$changement_2023)"
+"0","objectifs_communes[is.na(objectifs_communes$changement_2023), ""changement_2023""] <- 0"
+"0","revenus_communes <- read_xlsx(""../data/revenu_communes_insee.xlsx"", skip = 5, col_names = TRUE)"
+"0","revenus_communes <- revenus_communes[revenus_communes$CODGEO %in% data$insee_com,]"
+"0","revenus_communes = revenus_communes[, c(1, 3:5)]"
+"0","names(revenus_communes) = c(""insee_com"", ""nb_ménages_fiscaux"", ""nb_personnes_menages_fiscaux"", ""mediane_niveau_vie"")"
+"0","types_communes <- read_excel(""../data/types_communes.xlsx"", sheet = 4, skip = 2, col_names = TRUE)"
+"0","names(types_communes) <- c(""insee_com"", ""type_commune"")"
+"0","types_communes$type_commune <- factor(types_communes$type_commune, levels = c(""rural autonome très peu dense"", ""rural autonome peu dense"",  ""rural sous faible influence d'un pôle"", ""rural sous forte influence d'un pôle"", ""urbain densité intermédiaire"", ""urbain dense""))"
+"0","surf_bois <- read_excel(""../data/surface_boisee_off_2023.xlsx"", sheet = ""données"")"
+"0","surf_bois = surf_bois[surf_bois$`INSEE commune` %in% data$insee_com,c(""INSEE commune"", ""Surface commune"", ""feuillus"", ""mixtes"")]"

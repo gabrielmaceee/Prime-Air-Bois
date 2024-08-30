@@ -1,0 +1,29 @@
+"0","library(FactoMineR)"
+"0","library(factoextra)"
+"2","Le chargement a nécessité le package : ggplot2
+"
+"2","Welcome! Want to learn more? See two factoextra-related books at https://goo.gl/ve3WBa
+"
+"0","library(readxl)"
+"0","library(tidyr)"
+"0","library(dplyr)"
+"2","
+Attachement du package : ‘dplyr’
+
+"
+"2","Les objets suivants sont masqués depuis ‘package:stats’:
+
+    filter, lag
+
+"
+"2","Les objets suivants sont masqués depuis ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+"
+"0","library(stats)"
+"0","library(missMDA)"
+"0","library(corrplot)"
+"2","corrplot 0.92 loaded
+"
+"0","library(ggplot2)"

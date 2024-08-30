@@ -1,0 +1,4 @@
+"0","# check <- data[, c(""adresse_ville"", ""insee_com"", ""Type.combustible.nouveau.materiel"", ""type_commune.x"")]"
+"0","# check_gre <- check[check$adresse_ville %in% c(""GRENOBLE""),c(3)]"
+"0","# write_xlsx(check, ""../data/3_Resultat/check_communes.xlsx"")"
+"0","# write_xlsx(check_gre, ""../data/3_Resultat/check_Grenoble.xlsx"")"

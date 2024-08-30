@@ -1,0 +1,2 @@
+"0","var = get_pca_var(res.pca)"
+"0","corrplot(var$contrib[,1:10], is.corr = FALSE) "

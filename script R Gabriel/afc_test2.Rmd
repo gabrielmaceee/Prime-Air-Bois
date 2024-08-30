@@ -1,0 +1,247 @@
+---
+title: "Untitled"
+author: "Gabriel Macé"
+date: "2024-08-01"
+output: html_document
+---
+
+
+```{r}
+library(FactoMineR)
+library(factoextra)
+library(readxl)
+library(tidyr)
+library(dplyr)
+library(stats)
+library(missMDA)
+library(corrplot)
+library(ggplot2)
+```
+
+```{r}
+setwd("C:/Users/gmace/PAB/Projet Bois-buche/script R Gabriel")
+data <- read_excel("../data/3_Resultat/data_questionnaire_complet.xlsx")
+data <- data[!data$Type.Ancien.appareil %in% c("Chaudière","Cuisinière"),]
+data[data$Nouveau.matériel %in% c("Poêle de masse", "Poêle hydraulique"),]$Nouveau.matériel <- "Poêle"
+data <- data[!data$Nouveau.matériel %in% c("Chaudière","Cuisinière"),]
+# data <- data[!is.na(data$dossier_reçu),]
+data <- data[!is.na(data$dossier_reçu),]
+#data <- data[data$dossier_reçu > "2022-03-01",]
+
+# binaire <- read_excel("../data/2_Travail/export_questionnaire_binaire.xlsx")
+# binaire <- binaire[binaire$`N° dossier` %in% data$N..dossier,]
+# binaire <- binaire[,c(1,50:54)]
+# binaire <- binaire[!duplicated(binaire$`N° dossier`),c(1,2:6)]
+# # regrouper certaines modalités de la raison du changement d'appareil
+# binaire$`Qualité_air` <- binaire$`Qualité air de mon logement` + binaire$`Qualité de l'air extérieur`
+# binaire[binaire$`Qualité_air` == 2,]$`Qualité_air` <- 1
+# binaire$économiser <- binaire$`Économiser de l'argent` + binaire$`Économiser du bois/énergie`
+# binaire[binaire$économiser == 2,]$économiser <- 1
+# binaire <- binaire[, c(1,5,7:8)]
+
+types_communes <- read_excel("../data/types_communes.xlsx", sheet = 4, skip = 2, col_names = TRUE)
+names(types_communes) <- c("insee_com", "type_commune")
+types_communes$type_commune <- factor(types_communes$type_commune, levels = c("rural autonome très peu dense", "rural autonome peu dense",  "rural sous faible influence d'un pôle", "rural sous forte influence d'un pôle", "urbain densité intermédiaire", "urbain dense"))
+#data <- left_join(data, binaire, by = join_by("N..dossier" == "N° dossier"))
+data <- left_join(data, types_communes, by = "insee_com")
+
+data$Revenus <- factor(data$Revenus, levels = rev(c("Pas de réponse", "Moins de 20 000 €", "20 000 à 30 000 €", "30 000 à 40 000 €", "40 000 à 50 000 €", "50 000 à 60 000 €", "60 000 à 70 000 €", "70 000 à 80 000 €", "80 000 à 90 000 €", "Plus de 100 000 €")))
+
+data$Usage.ancien.matériel <- factor(data$Usage.ancien.matériel, levels = c("Chauffage principal", "Chauffage d'appoint", "Plaisir / agrément", "Pas de réponse"))
+data$Usage.nouveau.matériel <- factor(data$Usage.nouveau.matériel, levels = c("Chauffage principal", "Chauffage d'appoint", "Plaisir / agrément", "Pas de réponse"))
+
+data$Freq.utilisation.période.chauffe <- factor(data$Freq.utilisation.période.chauffe, levels = c("Tous les jours", "3 à 4 jours / semaine", "1 à 2 jours / semaine", "1 à 3 jours / mois", "moins souvent", "Jamais", "Pas de réponse"))
+
+data$Durée.séchage.bois <- factor(data$Durée.séchage.bois, levels =c("<1an", "1-2 ans", "> 2 ans", "Ne sait pas", "Pas de réponse"))
+
+data <- data %>% filter(!data$Nouveau.matériel == "Pas de réponse")
+
+data[data$Type.Ancien.appareil == "Poêle" & data$Type.combustible %in% c("Pas de réponse", 'Autre (détails dans colonne "Type combustible autre")'),"Type.combustible"] <- "à enlever"
+data[data$Nouveau.matériel == "Poêle" & data$Type.combustible.nouveau.materiel %in% c("Pas de réponse", "autre", "Bûche, autre"),"Type.combustible"] <- "à enlever"
+data <- data %>% filter(!data$Type.combustible == "à enlever" )
+data <- data %>% filter(!data$Type.combustible.nouveau.materiel == "à enlever" )
+
+data[data$Type.Ancien.appareil  == "Poêle" & data$Type.combustible %in% c("Bûche", "Bois de récup"),]$Type.Ancien.appareil <- "Poêle buche"
+data[data$Type.Ancien.appareil  == "Poêle" & data$Type.combustible == "Granulés",]$Type.Ancien.appareil <- "Poêle granulés"
+
+data[data$Nouveau.matériel == "Poêle" & data$Type.combustible.nouveau.materiel == "Bûche",]$Nouveau.matériel <- "Poêle bûche"
+data[data$Nouveau.matériel == "Poêle" & data$Type.combustible.nouveau.materiel == "Bûche, Granulés",]$Nouveau.matériel <- "Poêle mixte"
+data[data$Nouveau.matériel == "Poêle" & data$Type.combustible.nouveau.materiel == "Granulés",]$Nouveau.matériel <- "Poêle granulés"
+```
+
+
+```{r}
+library(fastDummies)
+ df_long <- data[, c("N..dossier", "Stockage.bois" )] %>%
+    separate_rows("Stockage.bois", sep = c(", "))
+  df_long <- dummy_cols(df_long, select_columns = "Stockage.bois", remove_first_dummy = FALSE, remove_selected_columns = TRUE)
+  df_binary <- df_long %>%
+    group_by(`N..dossier`) %>%
+    summarize(across(everything(), max))
+  names = c("Stockage.bois_A l'intérieur", "Stockage.bois_Pas de réponse", "Stockage.bois_Sans Abris", "Stockage.bois_Sous Abris")
+  names(df_binary) <- c("N..dossier",names)
+df_binary = df_binary[, c("N..dossier", "Stockage.bois_A l'intérieur", "Stockage.bois_Sans Abris", "Stockage.bois_Sous Abris")]
+data <- data %>% left_join(df_binary, by = "N..dossier")
+
+
+df_long <- data[, c("N..dossier", "Approvisionnement" )] %>%
+    separate_rows("Approvisionnement", sep = c(", "))
+df_long <- dummy_cols(df_long, select_columns = "Approvisionnement", remove_first_dummy = FALSE, remove_selected_columns = TRUE)
+df_binary <- df_long %>%
+    group_by(`N..dossier`) %>%
+    summarize(across(everything(), max))
+names = c("autre (colonne Questionnaire.Appro autre)", "Pas de réponse",   "personnel / gratuit", "Point de vente non spécialisé", "Producteur indépendant")
+names(df_binary) <- c("N..dossier",names)
+df_binary = df_binary[, c("N..dossier","personnel / gratuit", "Point de vente non spécialisé","Producteur indépendant")]
+data <- data %>% left_join(df_binary, by = "N..dossier")
+
+
+df_long <- data[, c("N..dossier", "Ramonage.installation" )] %>%
+    separate_rows("Ramonage.installation", sep = c(", "))
+df_long <- dummy_cols(df_long, select_columns = "Ramonage.installation", remove_first_dummy = FALSE, remove_selected_columns = TRUE)
+df_binary <- df_long %>%
+    group_by(`N..dossier`) %>%
+    summarize(across(everything(), max))
+names = c(" Pas de réponse", "un professionnel", "vous même")
+names(df_binary) <- c("N..dossier",names)
+df_binary = df_binary[, c("N..dossier","un professionnel", "vous même")]
+data <- data %>% left_join(df_binary, by = "N..dossier")
+```
+
+```{r}
+for(cate in c("Employé.e", "Cadre", "Autre,sans activité", "Retraité.e", "Ouvrier.ère", "Artisan.e, commerçant.s, chef.fe d'entreprise", "Profession intermédiaire", "Agriculteur.rice exploitant.e")){
+  data[,cate] <- rep(0, dim(data)[1])
+  data[data$Sit.pro.conjoint == cate | data$Sit.pro.demandeur == cate, cate] <- 1
+}
+```
+
+```{r}
+# a_enlever <-c("Classe.énergétique.logement", "Type.combustible.autre", "Qtté.bois.consommée", "Qtté.bois.unité", "Appro.autre", "Origine.bois", "Fréquence.ramonage.autre", "Type.combustible.nouveau.matériel.autre", "Fréquence.utilisation.période.de.chauffe.nouveau.matériel", "Motivation.autre", "Connaissance.aide.site.internet", "Connaissance.aide.autre", "insee_com", "kwh", "transfert_facture","dossier_reçu")
+# a_enlever = c(a_enlever, "équivalent_steres", "Nature.logement", "Occupation.logement", "Stockage.bois", "Type.combustible", "adresse_ville", "Motivation.changement.appareil", "Connaissance.aide", "Travaux.iso.depuis.2005", "Période.utilisation", "Sit.pro.demandeur", "Sit.pro.conjoint", "Surf.chauff.logement", "Fréquence.ramonage", "Ramonage.installation","Type.de.bois", "cout_appareil")
+# #"Année.installation",  "Revenus",  "montant_aide")
+# # faire un afc pour motivation changement appareil ? 
+# data_afmd <- data[,setdiff(names(data), a_enlever)]
+
+
+utilisation = c("Type.Ancien.appareil", "Usage.ancien.matériel", "Nouveau.matériel",  "Usage.nouveau.matériel", "type_commune", "Territoire",
+                # "économiser", "Gagner en confort/chaleur", "Qualité_air", 
+                # variable ajoutées après : 
+                 "Revenus", "Année.installation", "Durée.séchage.bois", "cluster_com",
+               "Employé.e", "Cadre", "Autre,sans activité", "Retraité.e", "Ouvrier.ère", "Artisan.e, commerçant.s, chef.fe d'entreprise", "Profession intermédiaire", "Agriculteur.rice exploitant.e"
+                #"Sit.pro.demandeur"#, "Sit.pro.conjoint", "Type.combustible.nouveau.materiel",
+              #,"refusé"
+              # , "dossier_reçu"
+              ,"personnel / gratuit", "Point de vente non spécialisé","Producteur indépendant" # "Approvisionnement",
+              , "Age", "majoration", "Freq.utilisation.période.chauffe"
+              , "Stockage.bois_A l'intérieur",  "Stockage.bois_Sans Abris", "Stockage.bois_Sous Abris", # "Stockage.bois", 
+              "un professionnel", "vous même" #, "Ramonage.installation"
+                )
+data_afmd <- na.omit(data[,c("N..dossier",utilisation)])# tranche de revenu, catégorie sp 2,
+# supprimer les pas de réponse dans nouvel app et type de combustible poêle
+# poele -> buche, granules, mixte ancien nouveau
+# enlever majoration, freq util car font doublons avec revenus et le type d'appareil / usage 
+# trouver une representation ACP : var / ind
+# ajouter la freq / pop totale dans les graphs
+```
+
+
+```{r}
+for(v in utilisation){
+  data_afmd[,v] <- as.factor(data_afmd %>% pull (v))
+}
+```
+
+```{r}
+res.afc<- MCA(data_afmd[,c("Type.Ancien.appareil", "Usage.ancien.matériel", "Nouveau.matériel",  "Usage.nouveau.matériel", "Freq.utilisation.période.chauffe", "Durée.séchage.bois","personnel / gratuit", "Point de vente non spécialisé","Producteur indépendant", "Stockage.bois_A l'intérieur",  "Stockage.bois_Sans Abris", "Stockage.bois_Sous Abris","un professionnel", "vous même")], graph = FALSE, ncp = 54)
+```
+
+```{r}
+eig.val <- get_eigenvalue(res.afc)
+head(eig.val,100)
+```
+
+
+
+```{r}
+fviz_contrib(res.afc, choice = "var", axes = c(1:31), top = 30)
+fviz_cos2(res.afc, choice = "var", axes = c(1:31), top = 30)
+```
+
+
+```{r}
+set.seed(4)
+res.km <- kmeans(res.afc$ind$coord, centers = 2, nstart = 25) # dim 1 qui sépare
+grp <- as.factor(res.km$cluster)
+summary(grp)
+# Colorer les variables par groupes
+fviz_famd_ind(res.afc, habillage = grp, palette = c("#0073C2FF", "#EFC000FF", "#868686FF","#FC4E07", "green", "orange", "pink"), legend.title = "Cluster",addEllipses = FALSE, axes = c(1,2), geom = "point") 
+
+for( v in setdiff(utilisation, c("cout_total_TTC","montant_aide", "Nb.pers.ménage") )){
+  print(v)
+  t = table(grp, data_afmd %>% pull(v))
+  t = as.table(rbind(t, table(data_afmd %>% pull(v))))
+  row.names(t) <- c(1,2, "Pop de référence")
+  t = t(addmargins(t))
+  t = t(t) / t[dim(t)[1],]
+  print(round(t[1:3,- dim(t)[2]],2))
+     plot(round(t[1:3,- dim(t)[2]],2), col = c("#0073C2FF", "#EFC000FF", "#868686FF","#FC4E07", "green", "orange", "pink","purple", "brown", "white"), las=1, main = v)
+}
+```
+
+
+
+```{r}
+fviz_mca_biplot(res.afc, geom.ind = "point", 
+                 habillage = grp, palette = c("#0073C2FF", "#EFC000FF"),
+                 select.var =list (contrib = 15), ggtheme = theme_minimal (), cex.lab = 0.1)
+```
+
+
+
+```{r}
+set.seed(3)
+res.km <- kmeans(res.afc$ind$coord, centers = 3, nstart = 25) # dim 1 qui sépare
+grp <- as.factor(res.km$cluster)
+summary(grp)
+# Colorer les variables par groupes
+fviz_famd_ind(res.afc, habillage = grp, palette = c("#0073C2FF", "#EFC000FF", "#868686FF","#FC4E07", "green", "orange", "pink"), legend.title = "Cluster",addEllipses = FALSE, axes = c(1,2), geom = "point") 
+
+for( v in setdiff(utilisation, c("cout_total_TTC","montant_aide", "Nb.pers.ménage") )){
+  print(v)
+  t = table(grp, data_afmd %>% pull(v))
+  t = as.table(rbind(t, table(data_afmd %>% pull(v))))
+  row.names(t) <- c(1,2,3, "Pop de référence")
+  t = t(addmargins(t))
+  t = t(t) / t[dim(t)[1],]
+  print(round(t[1:4,- dim(t)[2]],2))
+     plot(round(t[1:4,- dim(t)[2]],2), col = c("#0073C2FF", "#EFC000FF", "#868686FF","#FC4E07", "green", "orange", "pink","purple", "brown", "white"), las=1, main = v)
+}
+```
+
+
+
+```{r}
+set.seed(3)
+res.km <- kmeans(res.afc$ind$coord, centers = 4, nstart = 25) # dim 1 qui sépare
+grp <- as.factor(res.km$cluster)
+summary(grp)
+# Colorer les variables par groupes
+fviz_famd_ind(res.afc, habillage = grp, palette = c("#0073C2FF", "#EFC000FF", "#868686FF","#FC4E07", "green", "orange", "pink"), legend.title = "Cluster",addEllipses = FALSE, axes = c(1,2), geom = "point") 
+
+for( v in setdiff(utilisation, c("cout_total_TTC","montant_aide", "Nb.pers.ménage") )){
+  print(v)
+  t = table(grp, data_afmd %>% pull(v))
+  t = as.table(rbind(t, table(data_afmd %>% pull(v))))
+  row.names(t) <- c(1,2,3,4, "Pop de référence")
+  t = t(addmargins(t))
+  t = t(t) / t[dim(t)[1],]
+  print(round(t[1:5,- dim(t)[2]],2))
+     plot(round(t[1:5,- dim(t)[2]],2), col = c("#0073C2FF", "#EFC000FF", "#868686FF","#FC4E07", "green", "orange", "pink","purple", "brown", "white"), las=1, main = v)
+}
+```
+
+
+
+Si on prends seulement les variables relatives aux types d'apareils et à la conso : sépare bien gros consommateurs vs moins, mais après crée un groupe "Pas de réonse", puis devient vite spécifique (ex : un groupe "Plaisir/ agrément")
+
+Pareil avec toutes les variables relatives à l'usage

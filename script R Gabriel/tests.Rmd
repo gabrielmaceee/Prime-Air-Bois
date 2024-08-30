@@ -1,0 +1,250 @@
+---
+title: "Tests"
+author: "Gabriel Macé"
+date: "2024-05-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+library(tidyr)
+library(dplyr)
+library(stats)
+library(ggplot2)
+library(reshape2)
+data <- read_excel("../data/3_Resultat/data_questionnaire_complet.xlsx")[-1]
+# ajouter test uniformité  des variables quanti et quali (nb/modalités)
+```
+
+```{r}
+quanti = c("kwh", "Surf.chauff.logement", "Nb.pers.ménage", "cout_total_TTC", "montant_aide", "cout_appareil")
+nq = c("Appro.autre","Connaissance.aide.autre","Connaissance.aide.site.internet", "Fréquence.ramonage.autre", "Motivation.autre", "Type.combustible.autre", "adresse_ville", "insee_com","Qtté.bois.consommée", "Qtté.bois.unité", "dossier_reçu","Type.combustible.nouveau.matériel.autre",  "Fréquence.utilisation.période.de.chauffe.nouveau.matériel", "équivalent_steres","Classe.énergétique.logement", "transfert_facture", "Connaissance.aide", "Motivation.changement.appareil", "Travaux.iso.depuis.2005", "Période.utilisation", "Approvisionnement", "Date_refus", "refusé", "Date_dossier_complet", "cluster_com", quanti)
+# "Stockage.bois", "Type.combustible.nouveau.materiel","Période.utilisation", 
+quali = setdiff(names(data), nq)
+```
+
+
+**Tests corrélation variables quantitatives**
+
+```{r}
+# lm : H0 : X n'a pas d'effet sur Y
+library(car)
+p_value_correlation = c()
+co = c()
+p_value_lm = c()
+var1 = c()
+var2 = c()
+r2 = c()
+quanti2 = c()
+for(q in quanti){
+  quanti2 = c(quanti2, q)
+  for(q2 in setdiff(quanti,quanti2)){
+    if(q != q2){
+      df = drop_na(data, c(q, q2))
+      ct = cor.test(as.numeric(df %>% pull(q)), as.numeric(df %>% pull(q2)), method = "spearman")
+      p_value_correlation = c(p_value_correlation, ct$p.value)
+      p_value_lm = c(p_value_lm,summary(lm(df %>% pull(q2)~df %>% pull(q)))$coefficients["df %>% pull(q)", "Pr(>|t|)"]) # q explique q2
+      r2 =  c(r2,summary(lm(df %>% pull(q2)~df %>% pull(q)))$r.squared)
+      co = c(co, ct$estimate)
+      var1 = c(var1, q)
+      var2 = c(var2, q2)
+    }
+  }
+}
+res_corr = data.frame(q1 = var1, q2 = var2, correlation = round(co,3), p_value_corr = p.adjust(p_value_correlation, method = "BH", n = length(p_value_correlation)), r2 = round(r2,3), p_value_lm_ajustée = p.adjust(p_value_lm, method = "BH", n = length(p_value_lm)))
+res_corr
+print("vif kwh : ") # à quelle point c'est facile de prédire cette variable part régression linéaire
+print(vif(lm(kwh~.-kwh, data = data[,quanti])))
+print("vif Surf.chauff.logement : ")
+print(vif(lm(Surf.chauff.logement~., data = data[,quanti])))
+print("vif Nb.pers.ménage : ")
+print(vif(lm(Nb.pers.ménage~., data = data[,quanti])))
+print("vif count_total_TTC : ")
+print(vif(lm(cout_total_TTC~., data = data[,quanti])))
+print(" vif montant_aide : ")
+print(vif(lm(montant_aide~., data = data[,quanti])))
+```
+
+```{r}
+res_corr[res_corr$p_value_corr < 0.05 & res_corr$p_value_lm_ajustée < 0.05,]
+```
+
+Pas beaucoup de corrélation dans ces variables.
+A prendre avec des pincettes : 
+cout_total_TTC a un effet sur	coût appareil
+```{r}
+plot(res_corr$p_value_lm_ajustée, res_corr$p_value_corr ,pch = 3, main = "Liens inter-variables quantitatives",xlab = "p-valeurs ajustées régression linéaire", ylab = "p-valeurs ajustées corrélation")
+abline(h=0.05, col = "red")
+abline(v=0.05, col = "red")
+
+corre = cor(na.omit(data[,quanti]))
+ggplot(data = melt(corre), aes(x = Var1, y = Var2, fill = abs(value)))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "yellow", high = "red", mid = "orange", 
+   midpoint = 0.5, limit = c(0,1), space = "Lab", 
+   name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+ theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 8, hjust = 1))+
+ coord_fixed()
+```
+
+**Tests d'indépendance des variables qualitatives**
+```{r}
+# H0 : les deux variables sont indépendantes
+p_value = c()
+var1 = c()
+var2 = c()
+quali2 = c()
+for(q in quali){
+  quali2 = c(quali2, q)
+  for(q2 in setdiff(quali,quali2)){
+    if(q != q2){
+      df = drop_na(data, c(q, q2))
+      p_value = c(p_value,chisq.test(table(df %>% pull(q), df %>% pull(q2)))$p.value)
+      var1 = c(var1, q)
+      var2 = c(var2, q2)
+    }
+  }
+}
+res_chisq = data.frame(q1 = var1, q2 = var2,  p_value = p_value, p_value_ajustée = p.adjust(p_value, method = "bonferroni", n = length(p_value)))
+res_chisq[res_chisq[,"p_value_ajustée"] < 0.05,]
+```
+
+```{r}
+plot(res_chisq$p_value_ajustée, pch = 20, main = "Tests chi2 d'indépendance", ylab = "pvaleur ajustées chi2")
+abline(h=0.05, col = "red")
+```
+
+
+
+```{r}
+res_chisq[res_chisq[,"p_value_ajustée"] > 0.05,]
+```
+
+31 / 253 tests ou on ne rejette pas l'indépendance des variables, avec la correction de Bonferroni qui est très forte
+~- de 1/8
+15 avec p-value non ajustée
+Les variables sont donc fortements dépendantes
+
+**Tests d'égalité des variances et des moyennes**
+
+```{r}
+p_value_aov = c() # H0 : égalité des moyennes
+p_value_bart = c() # HO : égalité des variances
+var1 = c()
+var2 = c()
+for(q in c("Surf.chauff.logement", "Nb.pers.ménage", "cout_total_TTC", "montant_aide", "cout_appareil")  ){
+  for(q2 in quali){
+    if(q != q2){
+      df = drop_na(data, c(q, q2))
+      p_value_aov = c(p_value_aov, summary(aov(df %>% pull(q) ~ df %>% pull(q2)))[[1]][["Pr(>F)"]][1])
+      p_value_bart = c(p_value_bart, bartlett.test(df %>% pull(q) ~ df %>% pull(q2))$p.value)
+      var1 = c(var1, q)
+      var2 = c(var2, q2)
+    }
+  }
+}
+res_diff = data.frame(q1 = var1, q2 = var2,  p_value_anova = p_value_aov, p_value_anova_ajustée = p.adjust(p_value_aov, method = "BH", n = length(p_value_aov)), p_value_bartlett = p_value_bart, p_value_bartlett_ajustée = p.adjust(p_value_bart, method = "BH", n = length(p_value_bart)))
+
+```
+
+```{r}
+plot((res_diff$p_value_anova_ajustée), (res_diff$p_value_bartlett_ajustée), main = "Tests d'égalité des variances et des moyennes", xlab = "pvaleurs ajustées Anova", ylab = "pvaleurs ajustées bartlett", pch = 1)
+abline(h = 0.05, col = "red")
+abline(v = 0.05, col = "blue")
+```
+
+```{r}
+# différence de moyennes
+res_diff[res_diff[,"p_value_anova_ajustée"] < 0.05,]
+```
+90/115
+
+```{r}
+# différence de variance
+res_diff[res_diff[,"p_value_bartlett_ajustée"] < 0.05,]
+```
+103/115
+
+```{r}
+# différence de moyenne et de variance
+res_diff[(res_diff[,"p_value_anova_ajustée"] < 0.05 & res_diff[,"p_value_bartlett_ajustée"] < 0.05),]
+```
+
+84 / 115
+
+```{r}
+# égalité de moyenne et de variance
+res_diff[(res_diff[,"p_value_anova_ajustée"] >= 0.05 & res_diff[,"p_value_bartlett_ajustée"] >= 0.05),]
+```
+
+6/115
+
+Les groupes par modalités des variables qualitatives sont assez distincts
+
+# Conclusion :
+
+Il y a beaucoup de liens entre toutes les variables ! 
+Les variables qualitatives forment des groupes d'individus assez distincts.
+
+
+
+**Différence majoration**
+```{r}
+# H0 : les deux variables sont indépendantes
+p_value = c()
+var1 = c()
+var2 = c()
+quali2 = c()
+for(q in "majoration"){
+  quali2 = c(quali2, q)
+  for(q2 in setdiff(quali,quali2)){
+    if(q != q2){
+      df = drop_na(data, c(q, q2))
+      p_value = c(p_value,chisq.test(table(df %>% pull(q), df %>% pull(q2)))$p.value)
+      var1 = c(var1, q)
+      var2 = c(var2, q2)
+    }
+  }
+}
+res_chisq = data.frame(q1 = var1, q2 = var2,  p_value = p_value, p_value_ajustée = p.adjust(p_value, method = "bonferroni", n = length(p_value)))
+res_chisq[res_chisq[,"p_value_ajustée"] < 0.05,]
+```
+
+```{r}
+p_value_aov = c() # H0 : égalité des moyennes
+p_value_bart = c() # HO : égalité des variances
+var1 = c()
+var2 = c()
+for(q in quanti){
+  for(q2 in "majoration"){
+    if(q != q2){
+      df = drop_na(data, c(q, q2))
+      p_value_aov = c(p_value_aov, summary(aov(df %>% pull(q) ~ df %>% pull(q2)))[[1]][["Pr(>F)"]][1])
+      p_value_bart = c(p_value_bart, bartlett.test(df %>% pull(q) ~ df %>% pull(q2))$p.value)
+      var1 = c(var1, q)
+      var2 = c(var2, q2)
+    }
+  }
+}
+res_diff = data.frame(q1 = var1, q2 = var2,  p_value_anova = p_value_aov, p_value_anova_ajustée = p.adjust(p_value_aov, method = "BH", n = length(p_value_aov)), p_value_bartlett = p_value_bart, p_value_bartlett_ajustée = p.adjust(p_value_bart, method = "BH", n = length(p_value_bart)))
+```
+
+
+```{r}
+sum(na.omit(data[data$majoration == "M",]$montant_aide))
+sum(na.omit(data[data$majoration == "NM",]$montant_aide))
+table(data$majoration)
+```
+
+```{r}
+data_maj <- data[data$majoration == "M" & !(is.na(data$majoration)) & !(is.na(data$montant_aide)),] %>% group_by(Territoire)
+data_n_maj <- data[data$majoration == "NM" & !(is.na(data$majoration)) & !(is.na(data$montant_aide)),] %>% group_by(Territoire)
+data_maj %>% count()
+data_maj %>% summarise(montant_aide = sum(montant_aide))
+data_n_maj %>% count()
+data_n_maj %>% summarise(montant_aide = sum(montant_aide))
+```
+
+

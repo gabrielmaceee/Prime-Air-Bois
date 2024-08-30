@@ -1,0 +1,3 @@
+"0","data_test = data_test[data_test$n >=10, ]"
+"0","data_test_cr = data_test"
+"0","data_test_cr = data.frame(data_test_cr)"

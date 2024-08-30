@@ -1,0 +1,4 @@
+"0","corresp_clusters <- read.csv(""../data/2_Travail/Clusters individus.csv"")"
+"0","cc = data.frame(num_doss = data_afmd$N..dossier, cluster_granules = grp)"
+"0","corresp_clusters <- left_join(corresp_clusters, cc, by = ""num_doss"")[,-1]"
+"0","write.csv(corresp_clusters, ""../data/2_Travail/Clusters individus.csv"")"

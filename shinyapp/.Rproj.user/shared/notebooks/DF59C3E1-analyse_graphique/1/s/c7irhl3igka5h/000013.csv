@@ -1,0 +1,1 @@
+"0","legend(""topright"", legend=c(""Moins de 20 000 €"", revenus),  col = color[1:(length(unique(data$Revenus))-1)], lty=1, cex=0.5, bg=""transparent"")"
