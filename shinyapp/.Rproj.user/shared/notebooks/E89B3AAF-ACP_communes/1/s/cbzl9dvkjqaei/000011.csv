@@ -1,1 +1,0 @@
-"0","fviz_pca_ind(res.pca, col.ind = grp, palette = c(""#0073C2FF"", ""#EFC000FF"", ""#868686FF"",""#FC4E07"", ""green"", ""orange"", ""pink""), legend.title = ""Cluster"",addEllipses = FALSE, axes = c(1,3))"

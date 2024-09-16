@@ -1,6 +1,0 @@
-"0","# # Créez une variable de regroupement en utilisant kmeans"
-"0","# set.seed(23)"
-"0","# res.km <- kmeans(res.pca$ind$coord, centers = 6, nstart = 25)# Créez 3 groupes de variables (centers = 3)"
-"0","# grp <- as.factor(res.km$cluster)"
-"0","# # Colorer les variables par groupes"
-"0","# fviz_pca_ind(res.pca, col.ind = grp, palette = c(""#0073C2FF"", ""#EFC000FF"", ""#868686FF"",""#FC4E07"", ""green"", ""orange"", ""pink""), legend.title = ""Cluster"",addEllipses = FALSE)"

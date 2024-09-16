@@ -1,2 +1,0 @@
-"0","#La fonction fviz_eig() ou fviz_screeplot() [factoextra] peut être utilisée pour visualiser les proportions de variances expliquées par les différents axes:"
-"0","fviz_screeplot(res.afdm)"

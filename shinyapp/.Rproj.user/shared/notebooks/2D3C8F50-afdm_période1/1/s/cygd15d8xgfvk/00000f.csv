@@ -1,3 +1,0 @@
-"0","for(v in c(""cout_total_TTC"", ""montant_aide"")){"
-"0","  data_afmd[,v] <- scale(data_afmd %>% pull (v))"
-"0","}"

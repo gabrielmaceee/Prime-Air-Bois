@@ -1,3 +1,0 @@
-"0","fviz_mca_biplot(res.afc, geom.ind = ""point"", "
-"0","                 habillage = grp, palette = c(""#0073C2FF"", ""#EFC000FF""),"
-"0","                 select.var =list (contrib = 10), ggtheme = theme_minimal ())"

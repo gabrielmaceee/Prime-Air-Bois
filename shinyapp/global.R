@@ -299,7 +299,7 @@ shp <- st_read(dsn = "www/data/EPCI 2024_region.shp")
 shp <- shp[c(27, 175, 929),c("geometry")]
 shp$sociale <- c("CCLG", "GAM", "CAPV")           
 names(shp)[2] <- "Territoire"
-pop <- read.csv("../data/population.csv", sep = ";", skip = 2)[1:123, c(1,3)]
+pop <- read.csv("www/data/population.csv", sep = ";", skip = 2)[1:123, c(1,3)]
 pop$communes.depcom <- as.integer(pop$communes.depcom)
 
 carto_var <- function(df, colname){
@@ -439,8 +439,11 @@ taux_majoration <- function(){
 
 }
 
-evo_revenus <- function(df){
-  df <- df[df$dossier_recu >= "2016-01-01" & df$dossier_recu < "2024-01-01" & !is.na(df$dossier_recu),]
+evo_revenus <- function(df, terr){
+  if(terr == "CAPV"){
+    df <- df[df$dossier_recu >= "2022-01-01" & df$dossier_recu < "2024-01-01" & !is.na(df$dossier_recu),]
+  }
+  else{  df <- df[df$dossier_recu >= "2016-01-01" & df$dossier_recu < "2024-01-01" & !is.na(df$dossier_recu),]}
   df$dossier_recu <- format(df$dossier_recu, "%Y")
   df <- df %>%
     filter(revenus != "Pas de réponse")
@@ -976,15 +979,15 @@ diff_cluster_ind <- function(colname, df){
     fig
   }
   else if(column_cara$type == "qcm"){
-    df <- df[ !is.na(df$cluster_ind) & df$cluster_ind == "1",]
+    df1 <- df[ !is.na(df$cluster_ind) & df$cluster_ind == "1",]
     column_bin <- dico %>% filter(definition == colname)
-    summed_values <- colSums(df[, column_bin$id])
+    summed_values <- colSums(df1[, column_bin$id])
     summed_df <- data.frame(Item = names(summed_values), Count = summed_values)
     summed_df$Item <- factor(summed_df$Item, levels = summed_df$Item[order(ordre_bin[[colname]])])
     summed_df$Groupe = "1"
     
-    df <- df[ !is.na(df$cluster_ind) & df$cluster_ind == "2",]
-    summed_values2 <- colSums(df[, column_bin$id])
+    df2 <- df[ !is.na(df$cluster_ind) & df$cluster_ind == "2",]
+    summed_values2 <- colSums(df2[, column_bin$id])
     summed_df2 <- data.frame(Item = names(summed_values2), Count = summed_values2)
     summed_df2$Item <- factor(summed_df2$Item, levels = summed_df2$Item[order(ordre_bin[[colname]])])
     summed_df2$Groupe = "2"
@@ -1352,3 +1355,4 @@ aide_graph_clust_ind <- HTML("<font face='Comic sans MS'>
 aide_map_clust_ind <- HTML("<font size='-0.5'>Le gradient de couleur représente le taux d'individus du groupe 2, par communes : <br>
                            Plus une commune est jaune plus elle contient un taux important d'individus du groupe 2, et plus elle est bleue plus elle contient un taux
                            important d'individus du groupe 1.</font>")
+

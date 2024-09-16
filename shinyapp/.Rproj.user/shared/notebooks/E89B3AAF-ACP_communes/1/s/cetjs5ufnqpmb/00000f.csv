@@ -1,3 +1,0 @@
-"0","row.names(res.pca$ind$coord) <- data_acp[data_acp$n >= 10,]$insee_com"
-"0","hc <- hclust(dist(res.pca$ind$coord), method = ""ward.D"")"
-"0","plot(hc)"

@@ -122,7 +122,7 @@ Les résultats sont stockés dans différents dossiers :
  - Quelques fichiers Excel contenant des résultats des clustering sont stockés dans le fichier "data/3_Resultat";
 
 
-L'interface shiny "explorePAB" contenue dans le dossier "shinyapp".
+L'interface shiny "explorePAB" contenue dans le dossier "shinyapp", elle est aussi disponible [ici](https://explore-pab.sk8.inrae.fr/), et la dernière version du code l'est [ici](https://forgemia.inra.fr/sk8/sk8-apps/lessem/explore-pab).
 
 
 

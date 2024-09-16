@@ -1,2 +1,0 @@
-"0","hc <- hclust(dist(res.pca$ind$coord), method = ""ward.D2"")"
-"0","plot(hc)"

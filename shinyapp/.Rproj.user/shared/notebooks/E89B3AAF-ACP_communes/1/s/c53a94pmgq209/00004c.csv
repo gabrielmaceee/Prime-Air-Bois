@@ -1,2 +1,0 @@
-"0",""
-"0","res = data.frame(var = setdiff(names(data_acp), c(""insee_com"",""Territoire"")), p_valeur =  p.adjust(pval, method = ""BH"", n = length(pval)))"

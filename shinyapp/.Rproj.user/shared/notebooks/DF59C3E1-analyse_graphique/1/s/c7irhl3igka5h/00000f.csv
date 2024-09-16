@@ -1,4 +1,0 @@
-"0","revenus = c(""20 000 à 30 000 €"",""30 000 à 40 000 €"", ""40 000 à 50 000 €"", ""50 000 à 60 000 €"", ""60 000 à 70 000 €"", ""70 000 à 80 000 €"", ""80 000 à 90 000 €"", ""Plus de 100 000 €"")"
-"0","colfunc<-colorRampPalette(c(""cyan"",""green"",""blue""))"
-"0","color = colfunc(9)"
-"0","plot(table(format(data[data$Revenus == ""Moins de 20 000 €"",]$transfert_facture, ""%Y"")) / table(format(data$transfert_facture, ""%Y""))[-c(1,2,3)], type = ""l"", col = color[1], ylim = c(0, 0.3), main = ""évolution de la part de dossier par tranche de revenus"")"

@@ -95,7 +95,7 @@ shinyServer(function(input, output, session) {
       if(territoire_name == "Tous"){filter_data <- data}
       else{filter_data <- data %>%
         filter(territoire == territoire_name)}
-      evo_revenus(filter_data)
+      evo_revenus(filter_data, territoire_name)
     })
     
     output$montant_aide <- renderPlotly({

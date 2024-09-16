@@ -1,7 +1,0 @@
-"0",""
-"0",""
-"0","set.seed(7)"
-"0","res.km <- kmeans(res.afdm$ind$coord, centers = 2, nstart = 25)# Créez 2 groupes de variables (centers = 2)"
-"0","grp <- as.factor(res.km$cluster)"
-"0","# Colorer les variables par groupes"
-"0","fviz_famd_ind(res.afdm, habillage = grp, palette = c(""#0073C2FF"", ""#EFC000FF"", ""#868686FF"",""#FC4E07"", ""green"", ""orange"", ""pink""), legend.title = ""Cluster"",addEllipses = FALSE, geom = c(""point""))"

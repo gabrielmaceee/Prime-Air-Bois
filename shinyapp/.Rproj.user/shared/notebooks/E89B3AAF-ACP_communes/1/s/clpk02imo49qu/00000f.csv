@@ -1,3 +1,0 @@
-"0","set.seed(3)"
-"0","res.km <- kmeans(res.pca$ind$coord, centers = 2, nstart = 25)"
-"0","grp <- as.factor(res.km$cluster)"

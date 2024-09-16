@@ -1,2 +1,0 @@
-"0","#row.names(res.pca$ind$coord) <- na.omit(data_afdm)$commune"
-"0","fviz_pca_ind(res.pca, habillage = ""Territoire"", palette = c(""green"",""red"", ""blue""))"

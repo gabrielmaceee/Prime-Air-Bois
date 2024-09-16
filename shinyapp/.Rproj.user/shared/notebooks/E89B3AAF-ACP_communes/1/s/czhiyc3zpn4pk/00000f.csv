@@ -1,1 +1,0 @@
-"0","fviz_pca_biplot(res.pca, col.var = ""transparent"", label = ""quanti.sup"", col.ind = grp, palette = c(""#0073C2FF"", ""#EFC000FF"", ""#868686FF"",""#FC4E07"", ""green"", ""orange"", ""pink""), repel = TRUE)"

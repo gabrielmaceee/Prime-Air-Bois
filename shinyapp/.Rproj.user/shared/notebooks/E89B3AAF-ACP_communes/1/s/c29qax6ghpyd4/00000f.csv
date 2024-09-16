@@ -1,8 +1,0 @@
-"0","names(data_acp) <- c(""insee_com"", ""n"","
-"0","                     ""old_foyer_ouvert"", ""old_insert_fermé"", ""Type.Ancien.appareil_Pas de réponse"", ""old_Poêle"", "
-"0","                     ""old_appoint"", ""old_principal"", ""Usage.ancien.matériel_Pas de réponse"", ""old_agrément"", "
-"0","                     ""new_insert_fermé"", ""Nouveau.matériel_Pas de réponse"", ""new_Poêle"", "
-"0","                     ""Type.combustible.nouveau.materiel_autre"", ""Bûche"", ""Type.combustible.nouveau.materiel_Bûche, autre"", ""Type.combustible.nouveau.materiel_Bûche, Granulés"", ""Granulés"", ""Type.combustible.nouveau.materiel_Pas de réponse"", "
-"0","                     ""new_appoint"", ""new_principal"", ""Usage.nouveau.matériel_Pas de réponse"", ""new_agrément"", "
-"0","                     ""majorée"", ""majoration_NM"", ""majoration_NA"", ""cout_total_TTC"", ""montant_aide"","
-"0","                     ""confort"", ""Qualité_air"",""économiser"", ""Territoire"")"

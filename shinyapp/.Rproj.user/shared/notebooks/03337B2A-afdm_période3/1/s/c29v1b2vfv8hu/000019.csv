@@ -1,2 +1,0 @@
-"0","memb <- as.factor(cutree(hc, k = 3))"
-"0","fviz_famd_ind(res.afdm, habillage = memb, palette = c(""#0073C2FF"", ""#EFC000FF"", ""#868686FF"",""#FC4E07"", ""green"", ""orange"", ""pink""), legend.title = ""Cluster"",addEllipses = FALSE)"

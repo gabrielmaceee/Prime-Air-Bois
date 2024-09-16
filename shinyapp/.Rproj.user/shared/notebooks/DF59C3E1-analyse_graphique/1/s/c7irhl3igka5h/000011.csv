@@ -1,6 +1,0 @@
-"0","i = 2"
-"0","for(n in revenus){"
-"0","  if(n %in% c(""20 000 à 30 000 €"", ""30 000 à 40 000 €"", ""Plus de 100 000 €"")) lines(table(format(data[data$Revenus == n ,]$transfert_facture, ""%Y""))[-1]/ table(format(data$transfert_facture, ""%Y""))[-c(1,2,3)], type = ""l"", col = color[i])"
-"0","  else lines(table(format(data[data$Revenus == n ,]$transfert_facture, ""%Y""))/ table(format(data$transfert_facture, ""%Y""))[-c(1,2,3)], type = ""l"", col = color[i])"
-"0","  i = i + 1"
-"0","}"

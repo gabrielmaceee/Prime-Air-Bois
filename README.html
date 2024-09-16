@@ -357,7 +357,9 @@ display: none;
 <p>Scripts traitement et visualisation de données Prime Air-Bois</p>
 <div id="content" class="section level2">
 <h2>Content</h2>
-<p>Utilisation optimale en grand écran ## Getting started</p>
+</div>
+<div id="getting-started" class="section level2">
+<h2>Getting started</h2>
 <p>La gestion des credentials se fait en dehors de ce depot. On utilise
 désormais le fichier .Renviron pour stocker ces infos et eviter d’avoir
 a gérer des fichiers locaux.</p>
@@ -398,9 +400,26 @@ DB_SIDDT_DBDRIVER=&quot;PostgreSQL&quot;</code></pre>
 <li>glue</li>
 <li>ggmosaic</li>
 <li>epitools</li>
+<li>FactoMineR</li>
+<li>factoextra</li>
+<li>stats</li>
+<li>missMDA</li>
+<li>corrplot</li>
+<li>reshape2</li>
+<li>stringr</li>
+<li>clv</li>
+<li>fastDummies</li>
+<li>epitools</li>
+<li>vegan</li>
+<li>ggtext</li>
+<li>car</li>
+<li>purrr</li>
+<li>forcats</li>
+<li>janitor</li>
+<li>wordcloud</li>
+<li>tm</li>
+<li>RColorBrewer</li>
 </ul>
-<p>Note à moi même : penser à ajouter les libraries au fur et à
-mesure.</p>
 </div>
 <div id="origine-des-données" class="section level2">
 <h2>Origine des données</h2>
@@ -417,13 +436,15 @@ aval du projet, où les questions étaient plutôt portées sur leur
 satisfaction et leur nouveau mode d’utilisation de l’appareil.</li>
 </ul>
 <p>Toutes ces données ont été collectées de novembre 2015 à mai 2024, et
-ceci sur trois territoires : Le Pays Voironnais, le Grésivaudan, et
-Grenoble Alpes métropole. La base de données principale à analyser est
-le questionnaire en amont du projet, à laquelle nous avons ajouté
-plusieurs variables, telles que les différentes dates de demande et de
-versement de la prime, le coût total TTC des travaux, le montant d’aide
-demandé, le statu majoré ou non de la prime, le coût de l’appareil, ou
-encore la commune du demandeur.</p>
+ceci sur trois territoires : Le Pays Voironnais (CAPV), le Grésivaudan
+(CCLG), et Grenoble Alpes Métropole (GAM). La base de données principale
+à analyser est le questionnaire en amont du projet, à laquelle nous
+avons ajouté plusieurs variables, telles que les différentes dates de
+demande et de versement de la prime, le coût total TTC des travaux, le
+montant d’aide demandé, le statu majoré ou non de la prime, le coût de
+l’appareil, ou encore la commune du demandeur.</p>
+<p>Ces données d’origines sont stockées dans le dossier
+“data/1_Source”.</p>
 <p>Afin de compléter ces données, nous avons pu en récupérer d’autres,
 notamment au niveau communal : - Grâce à l’outil SIDDT de INRAE, nous
 avons pu récupérer des variables socio-démographiques, telles que le
@@ -436,42 +457,45 @@ de chaque commune</a>. - L’observatoire de la qualité de l’air « Atmo
 Auvergne-Rhône-Alpes », nous a fourni des données indiquant par commune
 le nombre d’appareils anciens au 31 décembre 2022, donc ceux à changer,
 ainsi que le nombre de ces appareils changés en 2023.</p>
-</div>
-<div id="fonctionnement-de-linterface" class="section level2">
-<h2>Fonctionnement de l’interface</h2>
-<p>L’interface se veut simple et est organisé en trois parties :</p>
-<div id="exploration" class="section level3">
-<h3>Exploration :</h3>
-<p>Cette première partie permet d’explorer les différentes variables,
-une par une, à l’aide de représentations graphiques adaptées. Aussi, il
-y a une couleur différente pour chaque territoire que vous représentez
-:</p>
+<p>Toutes ces données supplémentaires sont stockées dans “data”.</p>
+<div id="organisation-des-dossiers" class="section level3">
+<h3>Organisation des dossiers :</h3>
+<p>Dire comment est organisé le code, les analyses… quels sont les
+fichiers rmd d’analyse pertinent, où trouver les graphs.</p>
+<p>Les scripts R de traitement rendant les données exploitables sont
+ceux stockés dans le dossier “scripts/R”.</p>
+<p>Les fichiers R markdown de notre analyse des données sont stockés
+dans le dossier “script R Gabriel”. Les fichiers principaux sont :</p>
 <ul>
-<li>Gris si vous sélectionnez tous les territoires.</li>
-<li>Vert pour le Pays Voironnais (CAPV)</li>
-<li>Bleu pour Grenoble Alpes Métropole (GAM)</li>
-<li>Rouge pour le Grésivaudan (CCLG)</li>
+<li>“AFDM.Rmd” : Réduction de dimension et clustering au niveau des
+individus;</li>
+<li>“ACP_communes.Rmd” : Réduction de dimension et clustering au niveau
+communal;</li>
+<li>“tests.Rmd” : Tests statistiques inter-variables au niveau des
+individus;</li>
+<li>“tests_communes.Rmd” : Tests statistiques inter-variables au niveau
+communal;</li>
+<li>“analyse_graphique.Rmd” : Production de graphiques variés au niveau
+des individus;</li>
+<li>“variables_communales.Rmd” : Production de graphiques et
+cartographies au niveau communal.</li>
 </ul>
-</div>
-<div id="indicateurs" class="section level3">
-<h3>Indicateurs :</h3>
-<p>La seconde partie contient une sélection de graphiques spécifiques,
-ainsi qu’une carte, permettant de mieux comprendre les données. Elle est
-divisée en deux sections:</p>
+<p>Les résultats sont stockés dans différents dossiers :</p>
 <ul>
-<li><p>“La prime et ses bénéficiaires” : présentant la distribution
-générale de la prime;</p></li>
-<li><p>“Modes d’usages” : Présentant les évolutions de comportement
-avant et après le changement d’appareils.</p></li>
+<li>Les fichiers HTML correspondant aux R markdown sont stockés dans le
+dossier “script R Gabriel”;</li>
+<li>Les cartographies sont stockées dans le dossier “carto”;</li>
+<li>Les différents graphiques sont stockés dans le dossier
+“data/3_Resultat/graphes”;</li>
+<li>Quelques fichiers Excel contenant des résultats des clustering sont
+stockés dans le fichier “data/3_Resultat”;</li>
 </ul>
-</div>
-<div id="typologie" class="section level3">
-<h3>Typologie :</h3>
-<p>La dernière partie présente les résultats que nous avons obtenus en
-séparant les données en cluster : les liens entre les groupes et les
-variables, et la répartition géographique des groupes. Nous avons fait
-cette analyse à deux niveaux : au niveau communal et à celui de
-l’individu, ils constitueront chacun une section.</p>
+<p>L’interface shiny “explorePAB” contenue dans le dossier “shinyapp”,
+elle est aussi disponible <a href="https://explore-pab.sk8.inrae.fr/">ici</a>, et la dernière version
+du code l’est <a href="https://forgemia.inra.fr/sk8/sk8-apps/lessem/explore-pab">ici</a>.</p>
+<p>! Attention : Ayant du réaliser mon rapport pour la moitié de mon
+stage, certains résultats et interprétations peuvent être erronés ou
+incomplets.</p>
 </div>
 </div>
 </div>

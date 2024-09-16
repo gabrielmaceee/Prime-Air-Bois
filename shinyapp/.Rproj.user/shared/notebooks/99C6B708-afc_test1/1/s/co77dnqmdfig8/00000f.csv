@@ -1,1 +1,0 @@
-"0","res.afc<- MCA(data_afmd[,-1], graph = FALSE, ncp = 54, quali.sup = c(""Territoire"", ""cluster_com"", ""type_commune"", ""Age"", ""majoration"", ""Freq.utilisation.période.chauffe""))"
